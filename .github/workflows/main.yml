@@ -1,0 +1,25 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Build Docker Image
+      run: docker-compose -f ../../deployment/ci/uat/docker-compose.yml build
+
+    - name: Log in to Docker Hub
+      run: echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+    - name: Tag and Push Docker Image
+      run: |
+        docker-compose -f deployment/ci/uat/docker-compose.yml tag techlateef:1.1 ${{ secrets.DOCKER_HUB_USERNAME }}/techlateef:1.1
+        docker-compose -f deployment/ci/uat/docker-compose.yml tag push ${{ secrets.DOCKER_HUB_USERNAME }}/techlateef:1.1
